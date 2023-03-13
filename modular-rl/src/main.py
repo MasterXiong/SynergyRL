@@ -109,6 +109,7 @@ def train(_run):
         'cheetah_3_balanced', 'cheetah_5_back', 'cheetah_6_front',
     ]
     envs_test_names = [name for name in envs_train_names if name in envs_test_names_set]
+    # ISSUE: the test envs are also included in training envs?
     args.envs_train_names = envs_train_names
     args.envs_test_names = envs_test_names
     print("#" * 50 + "\ntraining envs: {}\n".format(envs_train_names) + "#" * 50)
@@ -124,6 +125,7 @@ def train(_run):
     max_num_agents = max(args.num_agents.values())
     # create vectorized training env
     obs_max_len = (max_num_agents * args.agent_obs_size)
+    # the wrapper add zero padding
     envs_train = [
         utils.makeEnvWrapper(name, obs_max_len, args.seed, unimal=args.unimal) for name in envs_train_names
     ]
