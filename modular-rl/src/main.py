@@ -119,9 +119,12 @@ def train(_run):
     args.agent_obs_size, args.max_action = utils.registerEnvs(
         envs_train_names, args.max_episode_steps, args.custom_xml
     )
+    print (f'limb obs size: {args.agent_obs_size}, max action: {args.max_action}')
     args.num_agents = {
         env_name: sum([len(x) for x in args.graphs[env_name]]) for env_name in envs_train_names
     }
+    print ('limbs in each robot')
+    print (args.num_agents)
     max_num_agents = max(args.num_agents.values())
     # create vectorized training env
     obs_max_len = (max_num_agents * args.agent_obs_size)
