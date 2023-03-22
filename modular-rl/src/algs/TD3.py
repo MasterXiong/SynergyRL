@@ -16,6 +16,8 @@ from .TransformerActor import TransformerPolicy
 from .TransformerCritic import CriticTransformerPolicy
 from .MonolithicActor import MonolithicPolicy
 from .MonolithicCritic import CriticMonolithicPolicy
+from .ConsistentMLPActor import ConsistentMLPPolicy
+from .ConsistentMLPCritic import ConsistentMLPCritic
 from .Synergy import Synergy
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -32,6 +34,8 @@ class TD3(object):
             actor = ActorGraphPolicy
         elif args.actor_type == "monolithic":
             actor = MonolithicPolicy
+        elif args.actor_type == 'cmlp':
+            actor = ConsistentMLPPolicy
         else:
             raise NotImplementedError
 
@@ -65,6 +69,8 @@ class TD3(object):
             critic = CriticGraphPolicy
         elif args.critic_type == "monolithic":
             critic = CriticMonolithicPolicy
+        elif args.critic_type == 'cmlp':
+            critic = ConsistentMLPCritic
         else:
             raise NotImplementedError
 

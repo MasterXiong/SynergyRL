@@ -10,6 +10,7 @@ import torch
 from sacred import Experiment
 from sacred.observers import MongoObserver, FileStorageObserver
 from tensorboardX import SummaryWriter
+import gym
 
 import checkpoint as cp
 import utils
@@ -18,7 +19,7 @@ from arguments import get_args
 from config import *
 from vec_env.subproc_vec_env import SubprocVecEnv
 
-import wandb
+# import wandb
 
 ex = Experiment("synergy")
 
@@ -56,9 +57,11 @@ def train(_run):
     # Set up directories ===========================================================
     os.makedirs(DATA_DIR, exist_ok=True)
     os.makedirs(BUFFER_DIR, exist_ok=True)
-    exp_name = args.expID
+    exp_name = '/'.join([args.label, str(args.seed)])
     exp_path = os.path.join(DATA_DIR, exp_name)
     rb_path = os.path.join(BUFFER_DIR, exp_name)
+    os.system(f'rm -r {exp_path}')
+    os.system(f'rm -r {rb_path}')
     os.makedirs(exp_path, exist_ok=True)
     os.makedirs(rb_path, exist_ok=True)
     # save arguments
@@ -126,8 +129,14 @@ def train(_run):
     print ('limbs in each robot')
     print (args.num_agents)
     max_num_agents = max(args.num_agents.values())
+    args.monolithic_max_agent = max_num_agents
     # create vectorized training env
     obs_max_len = (max_num_agents * args.agent_obs_size)
+    # get limb names
+    envs = [gym.make("environments:%s-v0" % env_name) for env_name in envs_train_names]
+    args.limb_names = dict()
+    for i, env in enumerate(envs):
+        args.limb_names[envs_train_names[i]] = env.model.body_names[1:]
     # the wrapper add zero padding
     envs_train = [
         utils.makeEnvWrapper(name, obs_max_len, args.seed, unimal=args.unimal) for name in envs_train_names
@@ -284,7 +293,7 @@ def train(_run):
                 print(
                     "-" * 50
                     + "\nExpID: {}, FPS: {:.2f}, TotalT: {}, EpisodeNum: {}, SampleNum: {}, ReplayBSize: {}".format(
-                        args.expID,
+                        exp_name,
                         this_training_timesteps / (time.time() - s),
                         total_timesteps,
                         episode_num,
