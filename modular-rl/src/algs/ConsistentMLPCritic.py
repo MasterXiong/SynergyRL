@@ -39,6 +39,10 @@ class ConsistentMLPCritic(nn.Module):
             self.limb_num[env_name] = len(self.limb_names[env_name])
         if 'humanoid' in list(self.limb_names.keys())[0]:
             full_limbs = self.limb_names['humanoid_2d_9_full']
+        elif 'hopper' in list(self.limb_names.keys())[0]:
+            full_limbs = self.limb_names['hopper_5']
+        elif 'walker' in list(self.limb_names.keys())[0]:
+            full_limbs = self.limb_names['walker_7_main']
         self.limb_idx = dict()
         for env_name in self.limb_names:
             self.limb_idx[env_name] = []

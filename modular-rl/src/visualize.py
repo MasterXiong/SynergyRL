@@ -15,12 +15,14 @@ import utils
 from arguments import get_args
 from config import *
 from gym.wrappers.monitoring import video_recorder
+import gym
 
 def generate_video(args):
 
     total_time = args.video_length * 100
-    exp_name = args.expID
-    exp_path = os.path.join(DATA_DIR, exp_name)
+    # exp_name = args.expID
+    exp_name = '_'.join([args.label, str(args.seed)])
+    exp_path = os.path.join(DATA_DIR, args.label, str(args.seed))
 
     if not os.path.exists(exp_path):
         raise FileNotFoundError("checkpoint does not exist")
@@ -76,6 +78,13 @@ def generate_video(args):
         env_name: sum([len(x) for x in args.graphs[env_name]]) for env_name in env_names
     }
     args.max_num_agents = max(args.num_agents.values())
+    args.monolithic_max_agent = args.max_num_agents
+
+    envs = [gym.make("environments:%s-v0" % env_name) for env_name in env_names]
+    args.limb_names = dict()
+    for i, env in enumerate(envs):
+        args.limb_names[env_names[i]] = env.model.body_names[1:]
+
     # setup agent policy
     policy = TD3.TD3(args)
 
@@ -84,10 +93,12 @@ def generate_video(args):
         if len(model_files) == 1:
             model_name = model_files[0]
         else:
+            model_files.remove('model.pyth')
             max_version = max(
                 [int(el.split("_")[1].split(".")[0]) for el in model_files]
             )
             model_name = f"model_{max_version}.pyth"
+        print (model_name)
         cp.load_model_only(exp_path, policy, model_name)
     except:
         raise Exception(
@@ -104,7 +115,7 @@ def generate_video(args):
         # create unique temp frame dir
         count = 0
         frame_dir = os.path.join(
-            VIDEO_DIR, "frames_{}_{}_{}".format(args.expID, env_name, count)
+            VIDEO_DIR, "frames_{}_{}_{}".format(exp_name, env_name, count)
         )
         # if args.unimal:
         #     from environments.unimal.config import cfg
@@ -121,16 +132,16 @@ def generate_video(args):
         while os.path.exists(frame_dir):
             count += 1
             frame_dir = "{}/frames_{}_{}_{}".format(
-                VIDEO_DIR, args.expID, env_name, count
+                VIDEO_DIR, exp_name, env_name, count
             )
         os.makedirs(frame_dir)
         # create video name without overwriting previously generated videos
         count = 0
-        video_name = "%s_%s_%d" % ("".join(args.expID.split("/")[-1]), env_name, count)
+        video_name = "%s_%s_%d" % ("".join(exp_name), env_name, count)
         while os.path.exists("{}/{}.mp4".format(VIDEO_DIR, video_name)):
             count += 1
             video_name = "%s_%s_%d" % (
-                "".join(args.expID.split("/")[-1]),
+                "".join(exp_name),
                 env_name,
                 count,
             )

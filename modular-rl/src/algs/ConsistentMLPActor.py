@@ -35,14 +35,18 @@ class ConsistentMLPPolicy(nn.Module):
             self.limb_num[env_name] = len(self.limb_names[env_name])
         if 'humanoid' in list(self.limb_names.keys())[0]:
             full_limbs = self.limb_names['humanoid_2d_9_full']
+        elif 'hopper' in list(self.limb_names.keys())[0]:
+            full_limbs = self.limb_names['hopper_5']
+        elif 'walker' in list(self.limb_names.keys())[0]:
+            full_limbs = self.limb_names['walker_7_main']
         self.limb_idx = dict()
         for env_name in self.limb_names:
             self.limb_idx[env_name] = []
             for limb in self.limb_names[env_name]:
                 idx = full_limbs.index(limb)
                 self.limb_idx[env_name].append(idx)
-            # print (self.limb_names[env_name])
-            # print (self.limb_idx[env_name])
+            print (self.limb_names[env_name])
+            print (self.limb_idx[env_name])
 
         self.actor = nn.Sequential(
             nn.Linear(self.state_dim * self.monolithic_max_agent, 1024),
